@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
-	"log"
+	"github.com/spf13/viper"
 
 	"github.com/gorilla/mux"
 
@@ -22,8 +24,20 @@ var (
 
 func main() {
 
+	cm := Configuration_manager{}
+	cm.v = viper.New()
+	if cm.Load("./app.conf") == false {
+		log.Fatalf("Can not load config file \n")
+		os.Exit(1)
+	}
+	app := cm.GetAppConfig()
+
+	connect := fmt.Sprintf("%s:%s@tcp(192.168.1.100:3306)/%s", app.User_db, app.Password_db, app.Dbname)
+	log.Println(connect)
+	log.Println("continue \n")
+
 	// first we connect to the SQL DB, so resources are available upon the first request to the server
-	db, err := sql.Open("mysql", "user:password@/dbname")
+	db, err := sql.Open("mysql", connect)
 	if err != nil {
 		log.Fatalf("Failed to open SQL database: %s", err)
 	}
