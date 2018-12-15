@@ -38,7 +38,8 @@ func main() {
 
 	// if we want to do something to each request before entering the route handler, for example checking an auth token
 	// we can implement a middleware
-	r.Use(loggingMiddleware, authMiddleware)
+
+	//r.Use(loggingMiddleware, authMiddleware)
 
 	// Now lets setup the server with a graceful shutddown
 	srv := &http.Server{
