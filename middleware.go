@@ -28,9 +28,11 @@ func authMiddleware(next http.Handler) http.Handler {
 		if val, ok := getKeys["user_name"]; ok {
 			userName = val
 		}
+		log.Println(userName)
 		if val, ok := getKeys["auth_token"]; ok {
 			authToken = val
 		}
+		log.Println(authToken)
 
 		// check POST form parameters from application/x-www-form-urlencoded content type
 		postKeys := retreivePostParameters(keys, r)
@@ -42,9 +44,12 @@ func authMiddleware(next http.Handler) http.Handler {
 		}
 
 		if userName != "" && authToken != "" {
+
+			db := Dbconn()
+
 			var user User
 			// check that the database has that auth token for that username
-			err := db.QueryRow("SELECT name, id, auth_token FROM users WHERE user_name = ?", userName).Scan(&user.Name, &user.ID, &user.AuthToken)
+			err := db.QueryRow("SELECT name, id, authToken FROM users WHERE user_name = ?", userName).Scan(&user.Name, &user.ID, &user.AuthToken)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Error: Authentication request returned an error: %s", err), http.StatusInternalServerError)
 				return
@@ -66,16 +71,15 @@ func authMiddleware(next http.Handler) http.Handler {
 
 func retreiveGetParameters(keys []string, r *http.Request) map[string]string {
 	m := make(map[string]string)
-
 	//iterate over the keys
-	for k := range m {
+	for _, k := range keys {
+		log.Println(k)
 		v := r.URL.Query().Get(k)
 		if v == "" {
 			continue
 		}
 		m[k] = v
 	}
-
 	return m
 }
 
